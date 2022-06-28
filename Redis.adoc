@@ -1,0 +1,127 @@
+= Redis Cheet Sheet
+:icons: font
+
+== What is Redis?
+
+Open source, speedy in-memory data store used as a database, cache, streaming engine, and message broker. Its a NoSQL key-value-store database.
+
+Supported data types are:
+
+* Strings
+* Lists
+* Sets
+* Hashes
+* Sorted Sets
+* Bitmaps and HyperLogLogs
+* Streams
+* Geospatial indexes
+
+There are clients and tools for many programming languages. For example: C, C++, C#, Go, Java, Kotlin, Lua, Matlab, Node.js, Python, R, Ruby, Rust, ...
+
+In Redis 6.2 and below, you can use Lua scripting with the EVAL command to program the server.
+
+See:
+
+* https://redis.io/
+* https://redis.io/docs/manual/data-types/
+* https://redis.io/docs/clients/
+* https://redis.io/commands/
+
+NOTE: You can filter the commands, e.g. for the data type 'string': https://redis.io/commands/?group=string
+
+== Start Redis
+
+.start a redis instance
+[source, bash]
+----
+docker run -d -p 6379:6379 --name my-redis redis
+----
+
+.connect to redis-cli
+[source, bash]
+----
+docker exec -it my-redis sh
+----
+
+== Start Redis-CLI
+
+.connect to local running redis
+[source, bash]
+----
+redis-cli
+----
+
+.connect to running redis on different host and port
+[source, bash]
+----
+redis-cli -h 127.0.0.1 -p 6379
+----
+
+== First Steps at Redis-Cli
+
+.ping-pong
+[source, bash]
+----
+ping
+----
+
+.info
+[source, bash]
+----
+info
+----
+
+.exit
+[source, bash]
+----
+exit
+----
+
+== Strings
+
+.SET
+[source, redis]
+----
+EXISTS mykey
+SET mykey "Hello"
+SET mykey " WORLD"
+GET mykey
+DEL mykey
+----
+
+.APPEND
+[source, redis]
+----
+EXISTS mykey
+APPEND mykey "Hello"
+APPEND mykey " WORLD"
+GET mykey
+DEL mykey
+----
+
+.MGET
+[source, redis]
+----
+SET key1 eins
+SET key2 '{value: "zwei"}'
+MGET key1 key2 key3
+----
+
+WARNING: `MGET` blocks Redis for the duration of the processing. A non-blocking query can be implemented with `SCAN`.
+
+== KEYS
+
+.get all keys
+[source, redis]
+----
+KEYS *
+----
+
+== FLUSHALL
+
+.remove all keys
+[source, redis]
+----
+FLUSHALL
+----
+
