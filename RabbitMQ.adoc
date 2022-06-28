@@ -1,0 +1,89 @@
+= RabbitMQ Cheet Sheet
+:icons: font
+
+== What is RabbitMQ?
+
+RabbitMQ is an open source message broker.
+
+    PRODUCER -publish-> BROKER --consume--> CONSUMER
+                               <-subscribe-
+
+See:
+
+* https://www.rabbitmq.com/
+* https://www.rabbitmq.com/getstarted.html
+
+== Start RabbitMQ
+
+.run RabbitMQ
+[source, bash]
+----
+docker run -d --hostname my-rabbit --name some-rabbit rabbitmq:3
+----
+
+This will start a RabbitMQ container listening on the default port of 5672.
+
+.run RabbitMQ with Management Plugin
+[source, bash]
+----
+docker run -d -p 15672:15672 --hostname my-rabbit --name some-rabbit rabbitmq:3-management
+
+docker run --rm -d -p 8080:15672 -p 5672:5672 --hostname my-rabbit --name my-rabbit rabbitmq:3-management
+----
+
+You can access it by visiting http://<your-ip>:15672 in a browser or via http://localhost:8080. Username and password: guest / guest.
+
+== First example with python
+
+First, let's start a consumer, which will run continuously waiting for deliveries.
+Now start the producer. The producer program will stop after every run.
+
+.Sending: send.py
+[source,python]
+----
+#!/usr/bin/env python
+import pika
+
+connection = pika.BlockingConnection(
+    pika.ConnectionParameters(host='localhost'))
+channel = connection.channel()
+
+channel.queue_declare(queue='hello', durable=True)
+
+message = "Hallo Welt!"
+channel.basic_publish(exchange='', routing_key='hello', body=message)
+print(" [x] Sent '" + message + "'")
+connection.close()
+----
+
+.Receiving: receive.py
+[source,python]
+----
+#!/usr/bin/env python
+import pika, sys, os
+
+def main():
+    connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
+    channel = connection.channel()
+
+    channel.queue_declare(queue='hello', durable=True)
+
+    def callback(ch, method, properties, body):
+        print(" [x] Received %r" % body)
+
+    channel.basic_consume(queue='hello', on_message_callback=callback, auto_ack=True)
+
+    print(' [*] Waiting for messages. To exit press CTRL+C')
+    channel.start_consuming()
+
+if __name__ == '__main__':
+    try:
+        main()
+    except KeyboardInterrupt:
+        print('Interrupted')
+        try:
+            sys.exit(0)
+        except SystemExit:
+            os._exit(0)
+----
+
